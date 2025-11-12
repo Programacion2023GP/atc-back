@@ -12,6 +12,7 @@ use App\Models\ObjResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class SParticularController extends Controller
 {
@@ -192,12 +193,14 @@ class SParticularController extends Controller
     }
     public function requestviewByIdDep(Request $request, Response $response)
     {
+        $authUser = Auth::user();
         $data = $request->all();
         $array = array();
         foreach ($data as $key => $value) {
             $array[] = $value['departamento_id'];
         }
-        $response = SpRequests::whereIn("id_departamento_destino", $array)->get();
+        if ($authUser->role_id == 1) $response = SpRequests::all();
+        else $response = SpRequests::whereIn("id_departamento_destino", $array)->get();
         return response()->json($response);
     }
     public function attachImgs(Request $request, Response $response, $id)

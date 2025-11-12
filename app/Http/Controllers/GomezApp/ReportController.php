@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\ObjResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
@@ -54,11 +55,13 @@ class ReportController extends Controller
     public function reportsviewById(Request $request, Response $response)
     {
         $data = $request->all();
+        $authUser = Auth::user();
         $array = array();
         foreach ($data as $key => $value) {
             $array[] = $value['departamento_id'];
         }
-        $response = ReportView::whereIn("id_departamento", $array)->get();
+        if ($authUser->role_id == 1) $response = ReportView::all();
+        else $response = ReportView::whereIn("id_departamento", $array)->get();
         return response()->json($response);
     }
     public function getCards(Response $response)
