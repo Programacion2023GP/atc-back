@@ -11,6 +11,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 
+
+
 class RoleController extends Controller
 {
     /**
@@ -18,11 +20,11 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response $response
      */
-    public function index(Response $response)
+    public function index(Int $role_id, Response $response)
     {
         $response->data = ObjResponse::DefaultResponse();
         try {
-            $list = Role::where('active', true)
+            $list = Role::where('active', true) /* where("id", ">=", $role_id) */
                 ->orderBy('roles.id', 'asc')->get();
             $response->data = ObjResponse::CorrectResponse();
             $response->data["message"] = 'Peticion satisfactoria. Lista de roles:';
@@ -38,12 +40,12 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response $response
      */
-    public function selectIndex(Response $response)
+    public function selectIndex(Int $role_id, Response $response)
     {
         $response->data = ObjResponse::DefaultResponse();
         try {
-            $list = Role::where('active', true)
-                ->select('roles.id as value', 'roles.role as text')
+            $list = Role::where('active', true) /* ->where("id", ">=", $role_id) */
+                ->select('roles.id as id', 'roles.role as label')
                 ->orderBy('roles.id', 'asc')->get();
             $response->data = ObjResponse::CorrectResponse();
             $response->data["message"] = 'Peticion satisfactoria. Lista de roles:';
@@ -67,11 +69,11 @@ class RoleController extends Controller
             $new_role = Role::create([
                 'role' => $request->role,
                 'description' => $request->description,
+                'page_index' => $request->page_index,
                 'read' => $request->read,
                 'create' => $request->create,
                 'update' => $request->update,
                 'delete' => $request->delete,
-                'more_permissions' => $request->more_permissions,
             ]);
             $response->data = ObjResponse::CorrectResponse();
             $response->data["message"] = 'peticion satisfactoria | rol registrado.';
@@ -118,11 +120,11 @@ class RoleController extends Controller
                 ->update([
                     'role' => $request->role,
                     'description' => $request->description,
-                    'read' => $request->read,
-                    'create' => $request->create,
-                    'update' => $request->update,
-                    'delete' => $request->delete,
-                    'more_permissions' => $request->more_permissions,
+                    'page_index' => $request->page_index
+                    // 'read' => $request->read,
+                    // 'create' => $request->create,
+                    // 'update' => $request->update,
+                    // 'delete' => $request->delete,
                 ]);
 
             $response->data = ObjResponse::CorrectResponse();
@@ -153,6 +155,62 @@ class RoleController extends Controller
             $response->data = ObjResponse::CorrectResponse();
             $response->data["message"] = 'peticion satisfactoria | rol eliminado.';
             $response->data["alert_text"] = 'Rol eliminado';
+        } catch (\Exception $ex) {
+            $response->data = ObjResponse::CatchResponse($ex->getMessage());
+        }
+        return response()->json($response, $response->data["status_code"]);
+    }
+
+    /**
+     * "Activar o Desactivar" (cambiar estado activo) rol.
+     *
+     * @param  int $id
+     * @return \Illuminate\Http\Response $response
+     */
+    public function disEnableRole(Int $id, Int $active, Response $response)
+    {
+        $response->data = ObjResponse::DefaultResponse();
+        try {
+            Role::where('id', $id)
+                ->update([
+                    'active' => (bool)$active
+                ]);
+
+            $description = $active == "0" ? 'desactivado' : 'reactivado';
+            $response->data = ObjResponse::CorrectResponse();
+            $response->data["message"] = "peticion satisfactoria | rol $description.";
+            $response->data["alert_text"] = "Rol $description";
+        } catch (\Exception $ex) {
+            $response->data = ObjResponse::CatchResponse($ex->getMessage());
+        }
+        return response()->json($response, $response->data["status_code"]);
+    }
+
+    /**
+     * Actualizar permisos.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response $response
+     */
+    public function updatePermissions(Request $request, Response $response)
+    {
+        $response->data = ObjResponse::DefaultResponse();
+        try {
+            $role = Role::find($request->id);
+            $role->read = $request->read;
+            $role->create = $request->create;
+            $role->update = $request->update;
+            $role->delete = $request->delete;
+            $role->more_permissions = $request->more_permissions;
+
+            $role->save();
+
+            // deleteTokenByAbility
+            DB::table('personal_access_tokens')->whereJsonContains('abilities', $role->role)->delete(); #Utilizar para cuando cambian permisos de un rol
+
+            $response->data = ObjResponse::CorrectResponse();
+            $response->data["message"] = 'peticion satisfactoria | permisos actualizado.';
+            $response->data["alert_text"] = 'Permisos actualizados';
         } catch (\Exception $ex) {
             $response->data = ObjResponse::CatchResponse($ex->getMessage());
         }
