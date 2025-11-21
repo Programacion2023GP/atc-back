@@ -37,7 +37,7 @@ Route::post('/app/saveresponse', [ReportController::class, 'saveResponseSP_Movil
 // RUTAS PROTEGIDAS --------------------------------------------------------
 Route::middleware('auth:sanctum')->group(function () {
    // Route::get('/getUser/{token}', [UserController::class,'getUser']); //cerrar sesión (eliminar los tokens creados)
-   Route::post('/logout/{id}', [UserController::class, 'logout']); //cerrar sesión (eliminar los tokens creados)
+   Route::post('/logout', [UserController::class, 'logout']); //cerrar sesión (eliminar los tokens creados)
 
    Route::controller(MenuController::class)->group(function () {
       // Route::get('/menus', 'index');
@@ -81,7 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::controller(RoleController::class)->group(function () {
       // Route::get('/roles', 'index');
       // Route::get('/roles/selectIndex', 'selectIndex');
-      Route::get('/roles/role_id?/{role_id?}', 'index');
+      Route::get('/roles/role_id/{role_id?}', 'index');
       Route::get('/roles/selectIndex/role_id/{role_id?}', 'selectIndex');
       Route::get('/roles/{id}', 'show');
       Route::post('/roles', 'create');

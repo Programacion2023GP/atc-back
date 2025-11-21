@@ -8,6 +8,7 @@ use App\Models\ObjResponse;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 
@@ -24,8 +25,14 @@ class RoleController extends Controller
     {
         $response->data = ObjResponse::DefaultResponse();
         try {
-            $list = Role::where('active', true) /* where("id", ">=", $role_id) */
-                ->orderBy('roles.id', 'asc')->get();
+            $auth = Auth::user();
+            $list = Role:: /* where("id", ">=", $role_id) */orderBy('roles.id', 'asc');
+
+            if ($auth->role_id > 1) {
+                $list = $list::where('active', true);
+            }
+            
+            $list = $list->get();
             $response->data = ObjResponse::CorrectResponse();
             $response->data["message"] = 'Peticion satisfactoria. Lista de roles:';
             $response->data["result"] = $list;
