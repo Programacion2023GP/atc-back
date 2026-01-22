@@ -203,6 +203,7 @@ class AtcAppController extends Controller
             $reportsAsunt2->id_reporte = $reports->id;
             $reportsAsunt2->id_servicio = 1;
             $reportsAsunt2->id_asunto = $request->id_asunto;
+            $reportsAsunt2->id_jornada = $request->id_jornada ?? null;
             $reportsAsunt2->observaciones = $request->comentarios;
             $reportsAsunt2->save();
 

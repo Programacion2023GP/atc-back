@@ -149,6 +149,7 @@ class ReportController extends Controller
                     $reportsAsunt->id_reporte = $reports->id;
                     $reportsAsunt->id_servicio = $request->tipoServicio;
                     $reportsAsunt->id_asunto = $request->id_asunto;
+                    $reportsAsunt->id_jornada = $request->id_jornada ?? null;
                     $reportsAsunt->observaciones = $request->observaciones;
                     $reportsAsunt->save();
 
@@ -192,7 +193,8 @@ class ReportController extends Controller
                         ->update([
                             'observaciones' => $request->observaciones,
                             'id_servicio' => $request->tipoServicio,
-                            'id_asunto' => $request->id_asunto
+                            'id_asunto' => $request->id_asunto,
+                            'id_jornada' => $request->id_jornada ?? null,
                         ]);
 
 
@@ -220,6 +222,7 @@ class ReportController extends Controller
                 $reportsAsunt2->id_reporte = $reports->id;
                 $reportsAsunt2->id_servicio = 1;
                 $reportsAsunt2->id_asunto = $request->id_asunto;
+                $reportsAsunt2->id_jornada = $request->id_jornada ?? null;
                 $reportsAsunt2->observaciones = $request->comentario;
                 $reportsAsunt2->save();
 

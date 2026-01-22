@@ -10,6 +10,7 @@ use App\Http\Controllers\GomezApp\ServiceController;
 use App\Http\Controllers\GomezApp\AsuntosDepController;
 use App\Http\Controllers\GomezApp\appController;
 use App\Http\Controllers\GomezApp\AtcAppController;
+use App\Http\Controllers\GomezApp\JornadaController;
 use App\Http\Controllers\GomezApp\MenuController;
 use App\Http\Controllers\GomezApp\UsuariosDepController;
 use App\Http\Controllers\GomezApp\SParticularController;
@@ -100,6 +101,15 @@ Route::middleware('auth:sanctum')->group(function () {
       Route::post('/departments', 'create');
       Route::post('/departments/update/{id?}', 'update');
       Route::post('/departments/destroy/{id}', 'destroy');
+   });
+
+   Route::controller(JornadaController::class)->group(function () {
+      Route::get('/jornadas', 'index');
+      Route::get('/jornadas/selectIndex', 'selectIndex');
+      Route::get('/jornadas/{id}', 'show');
+      Route::post('/jornadas', 'create');
+      Route::post('/jornadas/update/{id?}', 'update');
+      Route::post('/jornadas/destroy/{id}', 'destroy');
    });
 
    Route::controller(ReportController::class)->group(function () {
