@@ -115,7 +115,7 @@ Route::middleware('auth:sanctum')->group(function () {
    Route::controller(ReportController::class)->group(function () {
       Route::get('/reports', 'index');
       Route::post('/reports/id/{id}', 'destroy');
-      Route::get('/reportsview', 'reportsview');
+      Route::get('/reportsview/{filters?}', 'reportsview');
       Route::post('/reportsview', 'reportsviewById');
       Route::get('/icards', 'getCards');
       Route::post('/reports', 'saveReport');

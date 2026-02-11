@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Js;
 use Illuminate\Support\Str;
 
@@ -47,9 +48,46 @@ class ReportController extends Controller
             return response()->json(['response' => 'Token Invalido'], 401);
         }
     }
-    public function reportsview(Response $response)
+    public function reportsview(Response $response, Request $request)
     {
-        $response = ReportView::all();
+        $filters = $request;
+        // Log::info($filters['fecha_fin']);
+
+        $query = ReportView::query()
+            ->when(isset($filters['fecha_inicio']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '>=', $filters['fecha_inicio']);
+            })
+            ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
+            })
+            ->when(isset($filters['id_estatus']), function ($q) use ($filters) {
+                if (is_array($filters['id_estatus'])) { #=== 'array') {
+                    $q->whereIn('id_estatus', $filters['id_estatus']);
+                } else {
+                    $q->where('id_estatus', $filters['id_estatus']);
+                }
+            })
+            ->when(isset($filters['id_departamento']), function ($q) use ($filters) {
+                if (is_array($filters['id_departamento'])) { #=== 'array') {
+                    $q->whereIn('id_departamento', $filters['id_departamento']);
+                } else {
+                    $q->where('id_departamento', $filters['id_departamento']);
+                }
+            })
+            ->when(isset($filters['id_servicio']), function ($q) use ($filters) {
+                if (is_array($filters['id_servicio'])) { #=== 'array') {
+                    $q->whereIn('id_servicio', $filters['id_servicio']);
+                } else {
+                    $q->where('id_servicio', $filters['id_servicio']);
+                }
+            });
+
+        $query->whereNotNull('latitud')
+            ->whereNotNull('longitud');
+
+        // Log::info($query->toSql());
+
+        $response = $query->get();
         return response()->json($response);
     }
     public function reportsviewById(Request $request, Response $response)
