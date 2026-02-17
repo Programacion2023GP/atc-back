@@ -193,7 +193,7 @@ class ReportController extends Controller
 
 
                     $response->data = ObjResponse::CorrectResponse();
-                    $response->dara["result"] = $result;
+                    $response->data["result"] = $reports;
                     $response->data["message"] = 'Peticion satisfactoria | Lista de mis reportes.';
                 } else if ($request->op === "2") {
                     $idReport = $request->id;
