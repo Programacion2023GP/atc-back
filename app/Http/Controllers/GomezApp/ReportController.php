@@ -191,9 +191,11 @@ class ReportController extends Controller
                     $reportsAsunt->observaciones = $request->observaciones;
                     $reportsAsunt->save();
 
+                    $report = ReportView::where("id", $reports->id)->first();
+
 
                     $response->data = ObjResponse::CorrectResponse();
-                    $response->data["result"] = $reports;
+                    $response->data["result"] = $report;
                     $response->data["message"] = 'Peticion satisfactoria | Lista de mis reportes.';
                 } else if ($request->op === "2") {
                     $idReport = $request->id;
