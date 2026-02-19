@@ -195,4 +195,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
    Route::get('/reporte/atc/concentrado', [VConcentradoController::class, 'index']);
    Route::post('/reporte/atc/concentrado', [VConcentradoController::class, 'store']);
+
+   Route::post('/reporte/reporteador', [ReportController::class, 'reporteador']);
 });

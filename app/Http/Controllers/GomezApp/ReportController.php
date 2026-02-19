@@ -179,6 +179,9 @@ class ReportController extends Controller
                     $reports->id_estatus = 1;
                     $reports->community_id = $request->community_id;
                     $reports->created_at = now();
+                    $reports->id_departamento_capturista = $request->id_departamento_capturista;
+                    $reports->nombre_capturista = $request->nombre_capturista;
+
                     $reports->save();
 
 
@@ -224,6 +227,8 @@ class ReportController extends Controller
                     $reports->id_origen = $request->origen;
                     $reports->latitud = $lat;
                     $reports->longitud = $long;
+                    $reports->id_departamento_capturista = $request->id_departamento_capturista;
+                    $reports->nombre_capturista = $request->nombre_capturista;
                     $reports->updated_at = now();
                     $reports->save();
 
@@ -501,5 +506,64 @@ class ReportController extends Controller
         } else {
             return response()->json(['response' => 'Token Invalido'], 401);
         }
+    }
+
+
+
+
+
+    public function reporteador(Response $response, Request $request)
+    {
+        $filters = $request;
+        // Log::info($filters['fecha_fin']);
+
+        $query = ReportView::query()
+            ->when(isset($filters['fecha_inicio']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '>=', $filters['fecha_inicio']);
+            })
+            ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
+            })
+            ->when(isset($filters['id_estatus']) && $filters['concentrado'] !== 1, function ($q) use ($filters) {
+                if (is_array($filters['id_estatus'])) { #=== 'array') {
+                    $q->whereIn('id_estatus', $filters['id_estatus']);
+                } else {
+                    $q->where('id_estatus', $filters['id_estatus']);
+                }
+            })
+            ->when(isset($filters['id_departamento']), function ($q) use ($filters) {
+                if (is_array($filters['id_departamento'])) { #=== 'array') {
+                    $q->whereIn('id_departamento', $filters['id_departamento']);
+                } else {
+                    $q->where('id_departamento', $filters['id_departamento']);
+                }
+            })
+            ->when(isset($filters['id_asunto']), function ($q) use ($filters) {
+                if (is_array($filters['id_asunto'])) { #=== 'array') {
+                    $q->whereIn('id_asunto', $filters['id_asunto']);
+                } else {
+                    $q->where('id_asunto', $filters['id_asunto']);
+                }
+            })
+            ->when(isset($filters['colonia']), function ($q) use ($filters) {
+                if (is_array($filters['colonia'])) { #=== 'array') {
+                    $q->whereIn('colonia', $filters['colonia']);
+                } else {
+                    $q->where('colonia', $filters['colonia']);
+                }
+            })
+            ->when(isset($filters['id_servicio']), function ($q) use ($filters) {
+                if (is_array($filters['id_servicio'])) { #=== 'array') {
+                    $q->whereIn('id_servicio', $filters['id_servicio']);
+                } else {
+                    $q->where('id_servicio', $filters['id_servicio']);
+                }
+            });
+
+        Log::info($query->toSql());
+        Log::info($query->getBindings());
+
+        $response = $query->get();
+        return response()->json($response);
     }
 }
