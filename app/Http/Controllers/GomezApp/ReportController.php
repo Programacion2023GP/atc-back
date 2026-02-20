@@ -524,35 +524,35 @@ class ReportController extends Controller
             ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
                 $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
             })
-            ->when(isset($filters['id_estatus']) && $filters['concentrado'] !== 1, function ($q) use ($filters) {
+            ->when(isset($filters['id_estatus']) && !is_null($filters['id_estatus']) && $filters['concentrado'] !== 1, function ($q) use ($filters) {
                 if (is_array($filters['id_estatus'])) { #=== 'array') {
                     $q->whereIn('id_estatus', $filters['id_estatus']);
                 } else {
                     $q->where('id_estatus', $filters['id_estatus']);
                 }
             })
-            ->when(isset($filters['id_departamento']), function ($q) use ($filters) {
+            ->when(isset($filters['id_departamento']) && !is_null($filters['id_departamento']), function ($q) use ($filters) {
                 if (is_array($filters['id_departamento'])) { #=== 'array') {
                     $q->whereIn('id_departamento', $filters['id_departamento']);
                 } else {
                     $q->where('id_departamento', $filters['id_departamento']);
                 }
             })
-            ->when(isset($filters['id_asunto']), function ($q) use ($filters) {
+            ->when(isset($filters['id_asunto']) && !is_null($filters['id_asunto']), function ($q) use ($filters) {
                 if (is_array($filters['id_asunto'])) { #=== 'array') {
                     $q->whereIn('id_asunto', $filters['id_asunto']);
                 } else {
                     $q->where('id_asunto', $filters['id_asunto']);
                 }
             })
-            ->when(isset($filters['colonia']), function ($q) use ($filters) {
+            ->when(isset($filters['colonia']) && !is_null($filters['colonia']), function ($q) use ($filters) {
                 if (is_array($filters['colonia'])) { #=== 'array') {
                     $q->whereIn('colonia', $filters['colonia']);
                 } else {
                     $q->where('colonia', $filters['colonia']);
                 }
             })
-            ->when(isset($filters['id_servicio']), function ($q) use ($filters) {
+            ->when(isset($filters['id_servicio']) && !is_null($filters['id_servicio']), function ($q) use ($filters) {
                 if (is_array($filters['id_servicio'])) { #=== 'array') {
                     $q->whereIn('id_servicio', $filters['id_servicio']);
                 } else {
