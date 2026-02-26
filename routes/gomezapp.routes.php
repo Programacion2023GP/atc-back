@@ -10,6 +10,7 @@ use App\Http\Controllers\GomezApp\ServiceController;
 use App\Http\Controllers\GomezApp\AsuntosDepController;
 use App\Http\Controllers\GomezApp\appController;
 use App\Http\Controllers\GomezApp\AtcAppController;
+use App\Http\Controllers\GomezApp\EstatusController;
 use App\Http\Controllers\GomezApp\JornadaController;
 use App\Http\Controllers\GomezApp\MenuController;
 use App\Http\Controllers\GomezApp\UsuariosDepController;
@@ -195,6 +196,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
    Route::get('/reporte/atc/concentrado', [VConcentradoController::class, 'index']);
    Route::post('/reporte/atc/concentrado', [VConcentradoController::class, 'store']);
+
+   Route::controller(EstatusController::class)->group(function () {
+      Route::get('/estatus', 'index');
+      // Route::post('/estatus', 'store');
+      Route::get('/estatus/selectIndex', 'selectIndex');
+      Route::get('/estatus/{id}', 'show');
+      Route::post('/estatus/create', 'createOrUpdate');
+      Route::post('/estatus/update/{id}', 'createOrUpdate');
+      Route::get('/estatus/destroy/{id}', 'destroy');
+   });
 
    Route::post('/reporte/reporteador', [ReportController::class, 'reporteador']);
 });

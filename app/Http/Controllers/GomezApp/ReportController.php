@@ -552,16 +552,48 @@ class ReportController extends Controller
                     $q->where('colonia', $filters['colonia']);
                 }
             })
+
+
             ->when(isset($filters['id_servicio']) && !is_null($filters['id_servicio']), function ($q) use ($filters) {
                 if (is_array($filters['id_servicio'])) { #=== 'array') {
                     $q->whereIn('id_servicio', $filters['id_servicio']);
                 } else {
                     $q->where('id_servicio', $filters['id_servicio']);
                 }
+            })
+
+            ->when(isset($filters['id_jornada']) && !is_null($filters['id_jornada']), function ($q) use ($filters) {
+                if (is_array($filters['id_jornada'])) { #=== 'array') {
+                    $q->whereIn('id_jornada', $filters['id_jornada']);
+                } else {
+                    $q->where('id_jornada', $filters['id_jornada']);
+                }
             });
 
-        Log::info($query->toSql());
-        Log::info($query->getBindings());
+        // juntar por departamento y asunto, sumando peticiones, atendidas, terminadas, etc. y calculando eficiencia, tambien mostrar departamento y asunto
+
+        $columnaAsunto = $filters['agruparXdepartamento'] === true ? "MAX('TODOS') as asunto" : "MAX(asunto) as asunto";
+        // Agrupar solo por departamento
+        $query->selectRaw("id_departamento, MAX(department) as departamento, $columnaAsunto, 
+                COUNT(*) as peticiones, 
+                SUM(CASE WHEN id_estatus = 1 THEN 1 ELSE 0 END) as altas, 
+                SUM(CASE WHEN id_estatus = 2 THEN 1 ELSE 0 END) as enTramite, 
+                SUM(CASE WHEN id_estatus = 3 THEN 1 ELSE 0 END) as noProcede, 
+                SUM(CASE WHEN id_estatus = 4 THEN 1 ELSE 0 END) as terminadas");
+
+        if (isset($filters['agruparXdepartamento']) && $filters['agruparXdepartamento'] === true) {
+            $query->groupBy('id_departamento')
+                ->orderBy('department', 'asc');
+        } else {
+            // Agrupar por departamento y asunto
+            $query->groupBy('id_departamento', 'id_asunto')
+                ->orderBy('department', 'asc')
+                ->orderBy('asunto', 'asc');
+        }
+
+
+        // Log::info($query->toSql());
+        // Log::info($query->getBindings());
 
         $response = $query->get();
         return response()->json($response);
