@@ -135,6 +135,8 @@ class ReportController extends Controller
         $response->data = ObjResponse::DefaultResponse();
         $result = [];
         try {
+
+
             $imgName = "";
             if ($request->hasFile('imgFile')) {
                 $image = $request->file('imgFile');
@@ -158,43 +160,92 @@ class ReportController extends Controller
                     $users->sexo = $request->genero;
                     $users->save();
 
+                    // Log::info("request->subjects");
+                    // Log::info($request->subjects);
 
-                    $reports = new Report;
-                    $reports->id_user_create = $request->id_user_create;
-                    $reports->fecha_reporte = $request->fecha;
-                    $reports->folio =  $cadena_aleatoria;
-                    $reports->id_user = $users->id;
-                    $reports->calle = $request->calle;
-                    $reports->num_ext = $request->num_ext;
-                    $reports->num_int = $request->num_int;
-                    $reports->cp = $request->cp;
-                    $reports->colonia = $request->colonia;
-                    $reports->localidad = $request->ciudad;
-                    $reports->municipio = "";
-                    $reports->latitud = $lat;
-                    $reports->longitud = $long;
-                    $reports->estado = $request->estado;
-                    $reports->id_departamento = $request->id_departamento;
-                    $reports->id_origen = $request->origen;
-                    $reports->id_estatus = 1;
-                    $reports->community_id = $request->community_id;
-                    $reports->created_at = now();
-                    $reports->id_departamento_capturista = $request->id_departamento_capturista;
-                    $reports->nombre_capturista = $request->nombre_capturista;
+                    $idsRegistrados = [];
+                    if (!empty($request->subjects)) {
+                        foreach ($request->subjects as $asunto) {
+                            // Log::info("asunto");
+                            // Log::info($asunto);
+                            $reports = new Report;
+                            $reports->id_user_create = $request->id_user_create;
+                            $reports->fecha_reporte = $request->fecha;
+                            $reports->folio =  $cadena_aleatoria;
+                            $reports->id_user = $users->id;
+                            $reports->calle = $request->calle;
+                            $reports->num_ext = $request->num_ext;
+                            $reports->num_int = $request->num_int;
+                            $reports->cp = $request->cp;
+                            $reports->colonia = $request->colonia;
+                            $reports->localidad = $request->ciudad;
+                            $reports->municipio = "";
+                            $reports->latitud = $lat;
+                            $reports->longitud = $long;
+                            $reports->estado = $request->estado;
+                            $reports->id_departamento = $asunto["id_departamento"];
+                            $reports->id_origen = $request->origen;
+                            $reports->id_estatus = 1;
+                            $reports->community_id = $request->community_id;
+                            $reports->created_at = now();
+                            $reports->id_departamento_capturista = $request->id_departamento_capturista;
+                            $reports->nombre_capturista = $request->nombre_capturista;
 
-                    $reports->save();
+                            $reports->save();
 
+                            $reportsAsunt = new ReportAsuntos();
+                            $reportsAsunt->id_reporte = $reports->id;
+                            $reportsAsunt->id_servicio = $request->tipoServicio;
+                            $reportsAsunt->id_asunto = $asunto["id_asunto"];
+                            $reportsAsunt->id_jornada = $request->id_jornada ?? null;
+                            $reportsAsunt->observaciones = $asunto["observaciones"];
+                            $reportsAsunt->save();
 
+                            $idsRegistrados[] = $reports->id;
+                        }
+                    } else {
+                        $reports = new Report;
+                        $reports->id_user_create = $request->id_user_create;
+                        $reports->fecha_reporte = $request->fecha;
+                        $reports->folio =  $cadena_aleatoria;
+                        $reports->id_user = $users->id;
+                        $reports->calle = $request->calle;
+                        $reports->num_ext = $request->num_ext;
+                        $reports->num_int = $request->num_int;
+                        $reports->cp = $request->cp;
+                        $reports->colonia = $request->colonia;
+                        $reports->localidad = $request->ciudad;
+                        $reports->municipio = "";
+                        $reports->latitud = $lat;
+                        $reports->longitud = $long;
+                        $reports->estado = $request->estado;
+                        $reports->id_departamento = $request->id_departamento;
+                        $reports->id_origen = $request->origen;
+                        $reports->id_estatus = 1;
+                        $reports->community_id = $request->community_id;
+                        $reports->created_at = now();
+                        $reports->id_departamento_capturista = $request->id_departamento_capturista;
+                        $reports->nombre_capturista = $request->nombre_capturista;
 
-                    $reportsAsunt = new ReportAsuntos();
-                    $reportsAsunt->id_reporte = $reports->id;
-                    $reportsAsunt->id_servicio = $request->tipoServicio;
-                    $reportsAsunt->id_asunto = $request->id_asunto;
-                    $reportsAsunt->id_jornada = $request->id_jornada ?? null;
-                    $reportsAsunt->observaciones = $request->observaciones;
-                    $reportsAsunt->save();
+                        $reports->save();
 
-                    $report = ReportView::where("id", $reports->id)->first();
+                        $reportsAsunt = new ReportAsuntos();
+                        $reportsAsunt->id_reporte = $reports->id;
+                        $reportsAsunt->id_servicio = $request->tipoServicio;
+                        $reportsAsunt->id_asunto = $request->id_asunto;
+                        $reportsAsunt->id_jornada = $request->id_jornada ?? null;
+                        $reportsAsunt->observaciones = $request->observaciones;
+                        $reportsAsunt->save();
+                    }
+
+                    // Log::info("idsRegistrados");
+                    // Log::info($idsRegistrados);
+
+                    if (count($idsRegistrados) > 0) $report = ReportView::whereIn("id", $idsRegistrados)->get();
+                    else $report = ReportView::where("id", $reports->id)->get();
+
+                    // Log::info("reportFinal");
+                    // Log::info($report);
 
 
                     $response->data = ObjResponse::CorrectResponse();
@@ -275,6 +326,7 @@ class ReportController extends Controller
                 $response->data["message"] = 'Peticion satisfactoria | Lista de mis reportes.';
             }
         } catch (\Exception $ex) {
+            Log::error($ex->getMessage());
             $response->data = ObjResponse::CatchResponse($ex->getMessage());
         }
         return response()->json($response, $response->data["status_code"]);
