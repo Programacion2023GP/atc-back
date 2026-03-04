@@ -87,7 +87,7 @@ class ReportController extends Controller
 
         // Log::info($query->toSql());
 
-        $response = $query->get();
+        $response = $query->limit(5000)->get();
         return response()->json($response);
     }
     public function reportsviewById(Request $request, Response $response)
