@@ -92,14 +92,46 @@ class ReportController extends Controller
     }
     public function reportsviewById(Request $request, Response $response)
     {
-        $data = $request->all();
+        $filters = $request->all();
+        // Log::info($filters);
         $authUser = Auth::user();
-        $array = array();
-        foreach ($data as $key => $value) {
-            $array[] = $value['departamento_id'];
-        }
-        if ($authUser->role_id == 1) $response = ReportView::all();
-        else $response = ReportView::whereIn("id_departamento", $array)->get();
+        // $array = array();
+        // foreach ($data as $value) {
+        //     $array[] = $value->departamento_id;
+        // }
+        // if ($authUser->role_id == 1) $response = ReportView::all();
+        // else 
+        $response = ReportView::query()
+            ->when(isset($filters['fecha_inicio']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '>=', $filters['fecha_inicio']);
+            })
+            ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
+                $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
+            })
+            ->when(isset($filters['id_estatus']), function ($q) use ($filters) {
+                if (is_array($filters['id_estatus'])) { #=== 'array') {
+                    $q->whereIn('id_estatus', $filters['id_estatus']);
+                } else {
+                    $q->where('id_estatus', $filters['id_estatus']);
+                }
+            })
+            ->when(!in_array($authUser->role_id, [1, 5, 10]) && isset($filters['id_departamento']), function ($q) use ($filters) {
+                if (is_array($filters['id_departamento'])) { #=== 'array') {
+                    $q->whereIn('id_departamento', $filters['id_departamento']);
+                } else {
+                    $q->where('id_departamento', $filters['id_departamento']);
+                }
+            })
+            ->when(isset($filters['id_servicio']), function ($q) use ($filters) {
+                if (is_array($filters['id_servicio'])) { #=== 'array') {
+                    $q->whereIn('id_servicio', $filters['id_servicio']);
+                } else {
+                    $q->where('id_servicio', $filters['id_servicio']);
+                }
+            })->get();
+
+        // Log::info($response->toSql());
+
         return response()->json($response);
     }
     public function getCards(Response $response)
@@ -570,10 +602,10 @@ class ReportController extends Controller
         // Log::info($filters['fecha_fin']);
 
         $query = ReportView::query()
-            ->when(isset($filters['fecha_inicio']), function ($q) use ($filters) {
+            ->when(isset($filters['fecha_inicio']) && !is_null($filters['fecha_inicio']), function ($q) use ($filters) {
                 $q->whereDate('fecha_reporte', '>=', $filters['fecha_inicio']);
             })
-            ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
+            ->when(isset($filters['fecha_fin'])  && !is_null($filters['fecha_fin']), function ($q) use ($filters) {
                 $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
             })
             ->when(isset($filters['id_estatus']) && !is_null($filters['id_estatus']) && $filters['concentrado'] !== 1, function ($q) use ($filters) {
@@ -625,8 +657,9 @@ class ReportController extends Controller
         // juntar por departamento y asunto, sumando peticiones, atendidas, terminadas, etc. y calculando eficiencia, tambien mostrar departamento y asunto
 
         $columnaAsunto = $filters['agruparXdepartamento'] === true ? "MAX('TODOS') as asunto" : "MAX(asunto) as asunto";
+        $columnaColonia = $filters['agruparXcolonia'] === true ? "MAX(colonia) as colonia" : "MAX(colonia) as colonia";
         // Agrupar solo por departamento
-        $query->selectRaw("id_departamento, MAX(department) as departamento, $columnaAsunto, 
+        $query->selectRaw("id_departamento, MAX(department) as departamento, $columnaAsunto, $columnaColonia,
                 COUNT(*) as peticiones, 
                 SUM(CASE WHEN id_estatus = 1 THEN 1 ELSE 0 END) as altas, 
                 SUM(CASE WHEN id_estatus = 2 THEN 1 ELSE 0 END) as enTramite, 
@@ -635,6 +668,10 @@ class ReportController extends Controller
 
         if (isset($filters['agruparXdepartamento']) && $filters['agruparXdepartamento'] === true) {
             $query->groupBy('id_departamento')
+                ->orderBy('department', 'asc');
+        }
+        if (isset($filters['agruparXcolonia']) && $filters['agruparXcolonia'] === true) {
+            $query->groupBy('colonia')
                 ->orderBy('department', 'asc');
         } else {
             // Agrupar por departamento y asunto
