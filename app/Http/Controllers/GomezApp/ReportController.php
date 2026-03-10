@@ -102,10 +102,10 @@ class ReportController extends Controller
         // if ($authUser->role_id == 1) $response = ReportView::all();
         // else 
         $response = ReportView::query()
-            ->when(isset($filters['fecha_inicio']), function ($q) use ($filters) {
+            ->when(isset($filters['fecha_inicio']) && !is_null($filters['fecha_inicio']), function ($q) use ($filters) {
                 $q->whereDate('fecha_reporte', '>=', $filters['fecha_inicio']);
             })
-            ->when(isset($filters['fecha_fin']), function ($q) use ($filters) {
+            ->when(isset($filters['fecha_fin'])  && !is_null($filters['fecha_fin']), function ($q) use ($filters) {
                 $q->whereDate('fecha_reporte', '<=', $filters['fecha_fin']);
             })
             ->when(isset($filters['id_estatus']), function ($q) use ($filters) {
@@ -127,6 +127,13 @@ class ReportController extends Controller
                     $q->whereIn('id_servicio', $filters['id_servicio']);
                 } else {
                     $q->where('id_servicio', $filters['id_servicio']);
+                }
+            })
+            ->when(isset($filters['id_jornada']) && !is_null($filters['id_jornada']), function ($q) use ($filters) {
+                if (is_array($filters['id_jornada'])) { #=== 'array') {
+                    $q->whereIn('id_jornada', $filters['id_jornada']);
+                } else {
+                    $q->where('id_jornada', $filters['id_jornada']);
                 }
             })->get();
 
