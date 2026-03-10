@@ -667,12 +667,21 @@ class ReportController extends Controller
                 SUM(CASE WHEN id_estatus = 4 THEN 1 ELSE 0 END) as terminadas");
 
         if (isset($filters['agruparXdepartamento']) && $filters['agruparXdepartamento'] === true) {
-            $query->groupBy('id_departamento')
-                ->orderBy('department', 'asc');
-        }
-        if (isset($filters['agruparXcolonia']) && $filters['agruparXcolonia'] === true) {
+
+            if (isset($filters['agruparXcolonia']) && $filters['agruparXcolonia'] === true) {
+                $query->groupBy('id_departamento', 'colonia')
+                    ->orderBy('department', 'asc')
+                    ->orderBy('asunto', 'asc')
+                    ->orderBy('colonia', 'asc');
+            } else {
+                $query->groupBy('id_departamento')
+                    ->orderBy('department', 'asc');
+            }
+        } elseif (isset($filters['agruparXcolonia']) && $filters['agruparXcolonia'] === true) {
             $query->groupBy('colonia')
-                ->orderBy('department', 'asc');
+                ->orderBy('department', 'asc')
+                ->orderBy('asunto', 'asc')
+                ->orderBy('colonia', 'asc');
         } else {
             // Agrupar por departamento y asunto
             $query->groupBy('id_departamento', 'id_asunto')
