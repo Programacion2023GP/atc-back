@@ -14,6 +14,20 @@ return new class extends Migration
      */
     public function up()
     {
+        // Esta vista se ejecuta antes que la migración que agrega las columnas
+        // de evidencia. En bases existentes pueden estar presentes; en una
+        // instalación nueva todavía no existen en este punto.
+        $evidenceColumns = Schema::hasColumn('reportes', 'img_job')
+            ? ',
+        `reportes`.`img_job` AS `img_job`,
+        `reportes`.`img_zone` AS `img_zone`,
+        `reportes`.`img_evidence_worker_1` AS `img_evidence_worker_1`,
+        `reportes`.`img_evidence_worker_2` AS `img_evidence_worker_2`,
+        `reportes`.`img_evidence_worker_3` AS `img_evidence_worker_3`,
+        `reportes`.`img_evidence_worker_4` AS `img_evidence_worker_4`,
+        `reportes`.`img_evidence_worker_5` AS `img_evidence_worker_5`'
+            : '';
+
         DB::statement("
         CREATE OR REPLACE 
   
@@ -53,14 +67,8 @@ return new class extends Migration
         `reportes_asuntos`.`id_asunto` AS `id_asunto`,
         `asuntos`.`asunto` AS `asunto`,
         `reportes_asuntos`.`observaciones` AS `observaciones`,
-        `reportes_respuestas`.`respuesta` AS `respuesta`,
-		`reportes`.`img_job` AS `img_job`,
-		`reportes`.`img_zone` AS `img_zone`,
-        `reportes`.`img_evidence_worker_1` AS `img_evidence_worker_1`,
-        `reportes`.`img_evidence_worker_2` AS `img_evidence_worker_2`,
-        `reportes`.`img_evidence_worker_3` AS `img_evidence_worker_3`,
-	    `reportes`.`img_evidence_worker_4` AS `img_evidence_worker_4`,
-        `reportes`.`img_evidence_worker_5` AS `img_evidence_worker_5`
+        `reportes_respuestas`.`respuesta` AS `respuesta`
+        {$evidenceColumns}
     FROM   ((((((((`reportes`
         JOIN `users` ON ((`users`.`id` = `reportes`.`id_user`)))
         JOIN `departments` ON ((`departments`.`id` = `reportes`.`id_departamento`)))
