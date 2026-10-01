@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        CREATE VIEW solicitudesxestatus as
+        CREATE OR REPLACE VIEW solicitudesxestatus as
         select estatus, count(*) as Total from sp_requests where active = 1 group by estatus
     ");
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        DB::statement('DROP VIEW IF EXISTS incumplimiento');
+        DB::statement('DROP VIEW IF EXISTS solicitudesxestatus');
     }
 };

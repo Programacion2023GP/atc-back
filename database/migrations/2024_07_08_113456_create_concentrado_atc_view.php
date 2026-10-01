@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        create view vw_concentrado_atc as
+        create or replace view vw_concentrado_atc as
 SELECT 
 department,
  IFNULL(asunto, CONCAT('TOTAL-', department)) AS asunto,

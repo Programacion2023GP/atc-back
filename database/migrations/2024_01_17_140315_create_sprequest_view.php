@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        CREATE 
+        CREATE OR REPLACE 
   
         VIEW `spRequests` AS
         select sp_requests.*, departments.department,departments.director,asuntos.asunto FROM sp_requests 

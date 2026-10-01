@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        CREATE VIEW incumplimiento as
+        CREATE OR REPLACE VIEW incumplimiento as
         SELECT 
         `sp_requests`.`id` AS `id`,
         `sp_requests`.`folio` AS `folio`,

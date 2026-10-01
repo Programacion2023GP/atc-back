@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        CREATE 
+        CREATE OR REPLACE 
         VIEW `userdep` AS
             select ud.id,ud.user_id, u.email,ud.departamento_id,d.department  from usuarios_departamentos as ud
 inner join users as u on ud.user_id = u.id

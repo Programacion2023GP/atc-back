@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         DB::statement("
-        CREATE 
+        CREATE OR REPLACE 
         VIEW `asuntos_dep` AS
         SELECT 
             `departamentos_asuntos`.`department_id` AS `department_id`,
