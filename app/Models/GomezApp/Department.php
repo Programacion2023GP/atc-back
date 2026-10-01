@@ -25,8 +25,11 @@ class Department extends Model
         'director',
         'description',
         'active',
+        'can_issue_internal_requests',
         'deleted_at'
     ];
+
+    protected $casts = ['can_issue_internal_requests' => 'boolean'];
 
     /**
      * Los atributos que deben ocultarse para la serialización.

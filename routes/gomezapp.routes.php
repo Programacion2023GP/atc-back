@@ -16,6 +16,7 @@ use App\Http\Controllers\GomezApp\MenuController;
 use App\Http\Controllers\GomezApp\UsuariosDepController;
 use App\Http\Controllers\GomezApp\SParticularController;
 use App\Http\Controllers\GomezApp\VConcentradoController;
+use App\Http\Controllers\GomezApp\InternalRequestController;
 use Illuminate\Support\Facades\Route;
 
 #region CONTROLLERS
@@ -38,6 +39,22 @@ Route::post('/app/saveresponse', [ReportController::class, 'saveResponseSP_Movil
 
 // RUTAS PROTEGIDAS --------------------------------------------------------
 Route::middleware('auth:sanctum')->group(function () {
+   Route::prefix('internal-requests')->controller(InternalRequestController::class)->group(function () {
+      Route::get('/bootstrap', 'bootstrap');
+      Route::get('/folio', 'folioPreview');
+      Route::get('/metrics', 'metrics');
+      Route::get('/', 'index');
+      Route::post('/draft', 'saveDraft');
+      Route::put('/{internalRequest}/draft', 'saveDraft');
+      Route::get('/{internalRequest}', 'show');
+      Route::post('/{internalRequest}/send', 'send');
+      Route::post('/{internalRequest}/receive', 'receive');
+      Route::post('/{internalRequest}/start', 'start');
+      Route::post('/{internalRequest}/respond', 'respond');
+      Route::post('/{internalRequest}/reopen', 'reopen');
+      Route::post('/{internalRequest}/evidence', 'uploadEvidence');
+      Route::delete('/{internalRequest}', 'destroyDraft');
+   });
    // Route::get('/getUser/{token}', [UserController::class,'getUser']); //cerrar sesión (eliminar los tokens creados)
    Route::post('/logout', [UserController::class, 'logout']); //cerrar sesión (eliminar los tokens creados)
 
