@@ -26,5 +26,6 @@ Route::prefix('gomezapp')->group(function () {
     Route::get('/', function () {
         return 'API GomezApp v 3.0.0.0';
     });
-    include_once "gomezapp.routes.php";
+    require __DIR__.'/gomezapp.routes.php';
+    // include_once "gomezapp.routes.php";
 });

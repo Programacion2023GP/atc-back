@@ -14,14 +14,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-use Psy\Readline\Hoa\Console;
 
 class UserController extends Controller
 {
 
    public function login(Request $request, Response $response)
    {
-      Console::info("login() - request: " . json_encode($request->all()));
       try {
          $field = 'email';
          $value = $request->email;
