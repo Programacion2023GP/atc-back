@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -191,6 +192,20 @@ class UserController extends Controller
    {
       $response->data = ObjResponse::DefaultResponse();
       try {
+         $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'paternal_last_name' => ['required', 'string', 'max:100'],
+            'maternal_last_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('mysql_gomezapp.users', 'email')->where('active', 1)],
+            'password' => ['required', 'string', 'min:6'],
+            'role_id' => ['required', 'integer', Rule::exists('mysql_gomezapp.roles', 'id')->where('active', 1)],
+            'phone' => ['nullable', 'string', 'max:10'],
+            'curp' => ['nullable', 'string', 'max:18'],
+            'sexo' => ['required', Rule::in(['M', 'F'])],
+         ], [
+            'email.unique' => 'El correo ya está registrado en un usuario activo.',
+            'role_id.exists' => 'El rol seleccionado no está disponible.',
+         ]);
          // $token = $request->bearerToken();
 
          $existUser = User::where("email", $request->email)
@@ -222,6 +237,8 @@ class UserController extends Controller
             $response->data["message"] = 'peticion satisfactoria | usuario registrado.';
             $response->data["alert_text"] = "Usuario registrado";
          }
+      } catch (ValidationException $ex) {
+         throw $ex;
       } catch (\Exception $ex) {
          $response->data = ObjResponse::CatchResponse($ex->getMessage());
       }
@@ -251,6 +268,20 @@ class UserController extends Controller
    {
       $response->data = ObjResponse::DefaultResponse();
       try {
+         $request->validate([
+            'id' => ['required', 'integer', Rule::exists('mysql_gomezapp.users', 'id')],
+            'name' => ['required', 'string', 'max:100'],
+            'paternal_last_name' => ['required', 'string', 'max:100'],
+            'maternal_last_name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('mysql_gomezapp.users', 'email')->where('active', 1)->ignore($request->id)],
+            'role_id' => ['required', 'integer', Rule::exists('mysql_gomezapp.roles', 'id')->where('active', 1)],
+            'phone' => ['nullable', 'string', 'max:10'],
+            'curp' => ['nullable', 'string', 'max:18'],
+            'sexo' => ['required', Rule::in(['M', 'F'])],
+         ], [
+            'email.unique' => 'El correo ya está registrado en otro usuario activo.',
+            'role_id.exists' => 'El rol seleccionado no está disponible.',
+         ]);
 
 
          // $duplicate = $this->validateAvailableData($request->email, $request->phone, $request->curp, $request->id);
@@ -283,6 +314,8 @@ class UserController extends Controller
          $response->data = ObjResponse::CorrectResponse();
          $response->data["message"] = 'peticion satisfactoria | usuario actualizado.';
          $response->data["alert_text"] = "Usuario actualizado";
+      } catch (ValidationException $ex) {
+         throw $ex;
       } catch (\Exception $ex) {
          $response->data = ObjResponse::CatchResponse($ex->getMessage());
       }

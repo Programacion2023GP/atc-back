@@ -28,6 +28,7 @@ class InternalRequestController extends Controller
     private const PERMISSION_RECEIVE = 'Confirmar Recepción';
     private const PERMISSION_START = 'Iniciar Atención';
     private const PERMISSION_RESPOND = 'Responder';
+    private const PERMISSION_VIEW_ALL = 'Ver todas las solicitudes internas';
 
     public function bootstrap(Request $request)
     {
@@ -57,6 +58,7 @@ class InternalRequestController extends Controller
                 'receive' => $this->hasPermission($request, self::PERMISSION_RECEIVE),
                 'start' => $this->hasPermission($request, self::PERMISSION_START),
                 'respond' => $this->hasPermission($request, self::PERMISSION_RESPOND),
+                'view_all' => $this->hasPermission($request, self::PERMISSION_VIEW_ALL),
             ],
         ]);
     }
@@ -397,8 +399,8 @@ class InternalRequestController extends Controller
     private function requirePermission(Request $request, string $permission): void { if (! $this->hasPermission($request, $permission)) abort(403, "No cuenta con el permiso: {$permission}."); }
     private function requireIssuer(Request $request): Department { $issuer = $this->issuerDepartment($request); if (!$issuer && !$this->isSuperAdmin($request)) abort(403, 'Solo Oficialía Mayor puede realizar esta acción.'); return $issuer ?: Department::where('can_issue_internal_requests', true)->firstOrFail(); }
     private function requireDestination(Request $request, InternalRequest $item): void { if (!$this->isSuperAdmin($request) && !$this->departmentIds($request)->contains($item->destination_department_id)) abort(403, 'La solicitud no corresponde a sus departamentos.'); }
-    private function requireVisible(Request $request, InternalRequest $item): void { if (!$this->isSuperAdmin($request) && !$this->issuerDepartment($request) && (!$this->departmentIds($request)->contains($item->destination_department_id) || in_array($item->status, ['BORRADOR', 'NO_AUTORIZADA'], true))) abort(403); }
-    private function scopeVisible(Request $request, $query): void { if (!$this->isSuperAdmin($request) && !$this->issuerDepartment($request)) $query->whereIn('destination_department_id', $this->departmentIds($request))->whereNotIn('status', ['BORRADOR', 'NO_AUTORIZADA']); }
+    private function requireVisible(Request $request, InternalRequest $item): void { if (!$this->isSuperAdmin($request) && !$this->hasPermission($request, self::PERMISSION_VIEW_ALL) && (!$this->departmentIds($request)->contains($item->destination_department_id) || in_array($item->status, ['BORRADOR', 'NO_AUTORIZADA'], true))) abort(403); }
+    private function scopeVisible(Request $request, $query): void { if (!$this->isSuperAdmin($request) && !$this->hasPermission($request, self::PERMISSION_VIEW_ALL)) $query->whereIn('destination_department_id', $this->departmentIds($request))->whereNotIn('status', ['BORRADOR', 'NO_AUTORIZADA']); }
     private function event(Request $request, InternalRequest $item, string $type, ?string $from, ?string $to, $metadata = null): void { InternalRequestEvent::create(['internal_request_id' => $item->id, 'user_id' => $request->user()->id, 'type' => $type, 'from_status' => $from, 'to_status' => $to, 'metadata' => $metadata]); }
     private function ok($result, int $status = 200) { return response()->json(['data' => ['status_code' => $status, 'status' => true, 'result' => $result]], $status); }
 }
