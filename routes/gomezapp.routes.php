@@ -48,10 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
       Route::put('/{internalRequest}/draft', 'saveDraft');
       Route::get('/{internalRequest}', 'show');
       Route::post('/{internalRequest}/send', 'send');
+      Route::post('/{internalRequest}/redirect', 'redirect');
       Route::post('/{internalRequest}/receive', 'receive');
       Route::post('/{internalRequest}/start', 'start');
       Route::post('/{internalRequest}/respond', 'respond');
       Route::post('/{internalRequest}/reopen', 'reopen');
+      Route::post('/{internalRequest}/reference-file', 'uploadReferenceFile');
       Route::post('/{internalRequest}/evidence', 'uploadEvidence');
       Route::delete('/{internalRequest}', 'destroyDraft');
    });
