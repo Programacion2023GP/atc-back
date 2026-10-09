@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('gomezapp')->group(function () {
     Route::get('/', function () {
-        return 'API GomezApp v 3.0.0.1';
+        return 'API GomezApp v 3.0.0.2';
     });
     require __DIR__.'/gomezapp.routes.php';
     // include_once "gomezapp.routes.php";
